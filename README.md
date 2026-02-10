@@ -60,20 +60,6 @@ A full-stack role-based project marketplace workflow system where projects are c
 git clone <repository-url>
 cd marketplace-workflow
 ```
-
-### 1.5. Create Initial Admin User (Optional)
-
-To create an admin user, you can:
-1. Register a new user through the frontend
-2. Manually update the user's role in MongoDB:
-   ```javascript
-   db.users.updateOne(
-     { email: "your-email@example.com" },
-     { $set: { role: "admin" } }
-   )
-   ```
-3. Or use MongoDB Compass/CLI to update the role field
-
 ### 2. Install Dependencies
 
 ```bash
