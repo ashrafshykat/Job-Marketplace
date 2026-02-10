@@ -58,7 +58,7 @@ A full-stack role-based project marketplace workflow system where projects are c
 
 ```bash
 git clone <repository-url>
-cd marketplace-workflow
+cd job-marketplace
 ```
 ### 2. Install Dependencies
 
