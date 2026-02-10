@@ -1,0 +1,112 @@
+// This is your Prisma schema file
+// Learn more in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  password   String
+  role       String   @default("problem_solver") // admin, buyer, problem_solver
+  bio        String?
+  skills     String[] @default([])
+  experience String?
+  portfolio  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  buyerProjects    Project[]    @relation("BuyerProjects")
+  assignedProjects Project[]    @relation("AssignedProjects")
+  requests         Request[]
+  tasks            Task[]
+  submissions      Submission[]
+
+  @@map("users")
+}
+
+model Project {
+  id               String   @id @default(cuid())
+  title            String
+  description      String
+  buyerId          String
+  assignedSolverId String?
+  status           String   @default("open") // open, assigned, in_progress, completed
+  budget           Float?   @default(0)
+  deadline         DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  buyer          User        @relation("BuyerProjects", fields: [buyerId], references: [id])
+  assignedSolver User?       @relation("AssignedProjects", fields: [assignedSolverId], references: [id])
+  requests       Request[]
+  tasks          Task[]
+  submissions    Submission[]
+
+  @@map("projects")
+}
+
+model Request {
+  id        String   @id @default(cuid())
+  projectId String
+  solverId  String
+  message   String?
+  status    String   @default("pending") // pending, accepted, rejected
+  createdAt DateTime @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  solver  User    @relation(fields: [solverId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, solverId])
+  @@map("requests")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  projectId   String
+  userId      String   // Problem solver who created/owns this task
+  title       String
+  description String
+  deadline    DateTime
+  status      String   @default("pending") // pending, in_progress, submitted, completed, rejected
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  @@map("tasks")
+}
+
+model Submission {
+  id         String   @id @default(cuid())
+  taskId     String   @unique
+  projectId  String
+  solverId   String
+  filePath   String
+  fileName   String
+  fileSize   Int?
+  message    String?
+  status     String   @default("pending") // pending, accepted, rejected
+  reviewedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  task    Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  solver  User    @relation(fields: [solverId], references: [id], onDelete: Cascade)
+
+  @@map("submissions")
+}
